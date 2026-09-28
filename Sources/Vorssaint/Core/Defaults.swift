@@ -570,6 +570,8 @@ enum DefaultsKey {
     static let commandBarCompactMode = "commandBarCompactMode"
     /// The ASCII layout borrowed while the bar is open, restored on close. Off by default
     static let commandBarASCIILayoutEnabled = "commandBarASCIILayoutEnabled"
+    /// Which engine the bar's last row hands a search to, by `CommandBarWebSearch.Engine` raw value
+    static let commandBarWebSearchEngine = "commandBarWebSearchEngine"
     static let commandBarUsage = "commandBarUsage"           // per-command run counts, never queries
     static let commandBarQueryHabits = "commandBarQueryHabits" // keyed query digests → app row ids
     static let commandBarDisabledSources = "commandBarDisabledSources" // kinds of result switched off
@@ -1618,6 +1620,7 @@ enum Defaults {
         DefaultsKey.scratchpadShortcut: GlobalShortcut.scratchpadDefault.storageValue,
         DefaultsKey.commandBarShortcutEnabled: false,
         DefaultsKey.commandBarCompactMode: false,
+        DefaultsKey.commandBarWebSearchEngine: "google",
         DefaultsKey.commandBarASCIILayoutEnabled: false,
         DefaultsKey.commandBarDisabledSources: "",
         DefaultsKey.commandBarAliases: "",

@@ -816,7 +816,7 @@ final class CommandBarService: ObservableObject {
             // Neither has rows waiting anywhere to be counted: one lists the
             // commands it answers to, the other has to be given a word first.
             return true
-        case .quitApps, .uninstallApps, .answers, .calculator, .selection, .files:
+        case .quitApps, .uninstallApps, .answers, .calculator, .selection, .files, .webSearch:
             return false
         }
     }
@@ -848,7 +848,7 @@ final class CommandBarService: ObservableObject {
             rows = CommandBarCatalog.commandEntries(for: .generator, bar: bar)
         // The dictionary is answered before this point: its rows come from the
         // network for whatever is typed, not from a list that can be filtered.
-        case .dictionary, .quitApps, .answers, .calculator, .selection, .files:
+        case .dictionary, .webSearch, .quitApps, .answers, .calculator, .selection, .files:
             rows = []
         }
         return rows.filter { !hidden.contains($0.stableKey) }
@@ -883,6 +883,7 @@ final class CommandBarService: ObservableObject {
         case .calculator: return bar.sourceCalculator
         case .generator: return bar.sourceGenerator
         case .dictionary: return bar.sourceDictionary
+        case .webSearch: return bar.sourceWebSearch
         case .selection: return bar.sourceSelection
         case .files: return bar.sourceFiles
         case .links: return bar.linksTitle
@@ -1404,8 +1405,8 @@ final class CommandBarService: ObservableObject {
         case .snippets: return bar.kindSnippet
         case .folders: return bar.kindFolder
         case .actions, .apps, .menus, .windows, .quitApps, .uninstallApps, .settingsPages,
-             .macSettings, .clipboard, .emoji, .calculator, .generator, .dictionary, .selection,
-             .files, .killProcess:
+             .macSettings, .clipboard, .emoji, .calculator, .generator, .dictionary, .webSearch,
+             .selection, .files, .killProcess:
             return entry.subtitle.isEmpty ? bar.everythingTitle : entry.subtitle
         }
     }
@@ -1757,6 +1758,17 @@ final class CommandBarService: ObservableObject {
             }
             result.append(entry)
             if result.count >= 12 { break }
+        }
+        // Outside the cap, so a full list still ends with it, and last, so it
+        // only leads when the bar had nothing of its own to offer.
+        if isEnabled(.webSearch),
+           !hiddenCache.contains("web.search"),
+           let search = CommandBarCatalog.webSearchEntry(
+               for: trimmed,
+               engine: CommandBarWebSearch.engine(
+                   from: UserDefaults.standard.string(forKey: DefaultsKey.commandBarWebSearchEngine)),
+               bar: bar) {
+            result.append(search)
         }
         return result
     }

@@ -13,6 +13,8 @@ struct CommandBarSettings: View {
     @AppStorage(DefaultsKey.commandBarEmojiSkinTone) private var emojiSkinTone = ""
     @AppStorage(DefaultsKey.commandBarASCIILayoutEnabled) private var asciiLayoutEnabled = false
     @AppStorage(DefaultsKey.commandBarDisabledSources) private var disabledSources = ""
+    @AppStorage(DefaultsKey.commandBarWebSearchEngine)
+    private var webSearchEngine = CommandBarWebSearch.defaultEngine.rawValue
     @AppStorage(DefaultsKey.commandBarAliases) private var aliasesRaw = ""
     @AppStorage(DefaultsKey.commandBarPins) private var pinsRaw = ""
     @AppStorage(DefaultsKey.commandBarHidden) private var hiddenRaw = ""
@@ -176,6 +178,17 @@ struct CommandBarSettings: View {
                 } header: {
                     Label(title(for: source), systemImage: source.symbolName)
                 }
+            }
+
+            Section {
+                Picker(text.webSearchEngineLabel, selection: $webSearchEngine) {
+                    ForEach(CommandBarWebSearch.Engine.allCases) { engine in
+                        Text(engine.name).tag(engine.rawValue)
+                    }
+                }
+                .disabled(!CommandBarPreferences.isEnabled(.webSearch, disabledRaw: disabledSources))
+            } header: {
+                Label(title(for: .webSearch), systemImage: CommandBarSource.webSearch.symbolName)
             }
 
             Section {
@@ -511,6 +524,7 @@ struct CommandBarSettings: View {
         case .calculator: return text.sourceCalculator
         case .generator: return text.sourceGenerator
         case .dictionary: return text.sourceDictionary
+        case .webSearch: return text.sourceWebSearch
         case .selection: return text.sourceSelection
         case .links: return text.linksTitle
         case .files: return text.sourceFiles

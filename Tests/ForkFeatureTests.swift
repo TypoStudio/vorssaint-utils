@@ -182,6 +182,32 @@ enum ForkFeatureTests {
                },
                "every generator hint names a command the generator actually answers to")
 
+        // MARK: Command bar web search
+
+        func searchURL(_ engine: CommandBarWebSearch.Engine, _ query: String) -> String? {
+            engine.url(for: query)?.absoluteString
+        }
+        expect(searchURL(.google, "swift actor") == "https://www.google.com/search?q=swift%20actor",
+               "Google gets the words as its q parameter")
+        expect(searchURL(.naver, "성직자")
+                == "https://search.naver.com/search.naver?query=%EC%84%B1%EC%A7%81%EC%9E%90",
+               "Naver takes the words as query, escaped")
+        expect(searchURL(.bing, "a&b") == "https://www.bing.com/search?q=a%26b",
+               "an ampersand in the words cannot split the address")
+        expect(searchURL(.duckDuckGo, "  spaced  ") == "https://duckduckgo.com/?q=spaced",
+               "the words are trimmed before they are sent")
+        expect(searchURL(.google, "   ") == nil, "nothing typed is nothing to search for")
+        expect(CommandBarWebSearch.engine(from: "naver") == .naver, "a saved engine is read back")
+        expect(CommandBarWebSearch.engine(from: "altavista") == .google,
+               "an engine this build does not know falls back to the default")
+        expect(CommandBarWebSearch.engine(from: nil) == .google, "and so does nothing saved")
+        expect(Defaults.registeredDefaults[DefaultsKey.commandBarWebSearchEngine] as? String
+                == CommandBarWebSearch.defaultEngine.rawValue,
+               "the registered default is the engine the code calls its default")
+        expect(Set(CommandBarWebSearch.Engine.allCases.map(\.name)).count
+                == CommandBarWebSearch.Engine.allCases.count,
+               "no two engines share a name in the picker")
+
         // MARK: Clipboard snippets
 
         let snippetList = [

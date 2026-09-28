@@ -451,6 +451,7 @@ if (( TEST )); then
         Sources/Vorssaint/Services/CommandBar/CommandBarGenerator.swift
         Sources/Vorssaint/Services/CommandBar/CommandBarDictionary.swift
         Sources/Vorssaint/Services/CommandBar/CommandBarHints.swift
+        Sources/Vorssaint/Services/CommandBar/CommandBarWebSearch.swift
         Sources/Vorssaint/Services/CommandBar/CommandBarRowShortcuts.swift
         Sources/Vorssaint/Services/CommandBar/CommandBarSystemSettingsSupport.swift
         Sources/Vorssaint/Services/CommandBar/CommandBarFileSearchSupport.swift

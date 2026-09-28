@@ -29,6 +29,9 @@ enum CommandBarSource: String, CaseIterable, Identifiable {
     case generator
     /// Naver's dictionary, the one source that leaves the Mac to answer.
     case dictionary
+    /// The last row for anything typed: the same words, handed to a search
+    /// engine in the default browser. Nothing leaves the Mac until it is run.
+    case webSearch
     /// What the person had selected when the bar opened.
     case selection
     /// The links, folders and searches the person saved themselves.
@@ -62,6 +65,7 @@ enum CommandBarSource: String, CaseIterable, Identifiable {
         case .calculator: return "equal.square"
         case .generator: return "dice"
         case .dictionary: return "character.book.closed"
+        case .webSearch: return "magnifyingglass"
         case .selection: return "text.cursor"
         case .links: return "bookmark"
         case .files: return "doc.text.magnifyingglass"
@@ -88,6 +92,7 @@ enum CommandBarSource: String, CaseIterable, Identifiable {
         case .calculator: return nil
         case .generator: return "gen."
         case .dictionary: return "dict."
+        case .webSearch: return "web."
         case .selection: return "selection."
         case .links: return "link."
         case .files: return "file."
@@ -165,7 +170,7 @@ enum CommandBarPreferences {
         case .files, .settingsPages: return -40
         case .apps: return 80
         case .actions, .windows, .quitApps, .uninstallApps, .macSettings, .snippets,
-             .clipboard, .emoji, .folders, .answers, .calculator, .generator, .dictionary,
+             .clipboard, .emoji, .folders, .answers, .calculator, .generator, .dictionary, .webSearch,
              .selection, .links, .killProcess:
             return 0
         }
@@ -196,7 +201,7 @@ enum CommandBarPreferences {
     static func acceptsAlias(rowID: String) -> Bool {
         switch source(ofRowID: rowID) {
         case .menus, .windows, .clipboard, .selection, .files, .killProcess, .uninstallApps,
-             .generator, .dictionary:
+             .generator, .dictionary, .webSearch:
             return false
         case .actions, .apps, .quitApps, .settingsPages, .macSettings, .snippets, .emoji,
              .folders, .answers, .calculator, .links:
@@ -271,7 +276,7 @@ enum CommandBarPreferences {
     static func acceptsPin(rowID: String) -> Bool {
         switch source(ofRowID: rowID) {
         case .menus, .quitApps, .uninstallApps, .clipboard, .emoji, .selection, .files, .killProcess,
-             .generator, .dictionary:
+             .generator, .dictionary, .webSearch:
             return false
         case .actions, .apps, .windows, .settingsPages, .macSettings, .snippets, .folders,
              .links, .answers, .calculator:
@@ -327,7 +332,7 @@ enum CommandBarPreferences {
         switch source(ofRowID: rowID) {
         case .actions, .settingsPages, .snippets: return true
         case .apps, .uninstallApps, .menus, .windows, .quitApps, .macSettings, .clipboard, .emoji,
-             .folders, .answers, .calculator, .generator, .dictionary, .selection, .links,
+             .folders, .answers, .calculator, .generator, .dictionary, .webSearch, .selection, .links,
              .files, .killProcess:
             return false
         }

@@ -222,7 +222,7 @@ enum CommandBarFeatureTests {
         suite.expect(CommandBarSource.allCases.map(\.rawValue) == [
             "actions", "apps", "menus", "windows", "quitApps", "uninstallApps", "settingsPages",
             "macSettings", "snippets", "clipboard", "emoji", "folders", "answers", "calculator",
-            "generator", "dictionary", "selection", "links", "files", "killProcess",
+            "generator", "dictionary", "webSearch", "selection", "links", "files", "killProcess",
         ], "source ids are stable (they persist inside the disabled list)")
         suite.expect(CommandBarSource.actions.isAlwaysOn
                 && CommandBarSource.allCases.filter(\.isAlwaysOn).count == 1,

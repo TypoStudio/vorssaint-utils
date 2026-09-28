@@ -1709,6 +1709,26 @@ enum CommandBarCatalog {
         return rows
     }
 
+    // MARK: - Searching the web
+
+    /// The last row for anything typed: the same words handed to the chosen
+    /// search engine in the default browser. Last on purpose, below every
+    /// answer the Mac itself has, so it is only what Return runs when nothing
+    /// else matched.
+    static func webSearchEntry(for query: String,
+                               engine: CommandBarWebSearch.Engine,
+                               bar: CommandBarFeatureStrings) -> CommandBarEntry? {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let url = engine.url(for: trimmed) else { return nil }
+        return CommandBarEntry(
+            id: "web.search",
+            title: trimmed,
+            subtitle: String(format: bar.webSearchFormat, engine.name),
+            icon: .symbol("magnifyingglass"),
+            countsUsage: false,
+            run: { _ in NSWorkspace.shared.open(url) })
+    }
+
     // MARK: - Teaching the typed commands
 
     /// The rows that say what a half-typed command does and what it reads
