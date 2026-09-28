@@ -26,6 +26,7 @@ struct ClipboardSettings: View {
     @AppStorage(DefaultsKey.clipboardAutoClearOnSleep) private var autoClearOnSleep = false
     @AppStorage(DefaultsKey.clipboardAutoClearOnDisplaySleep) private var autoClearOnDisplaySleep = false
     @AppStorage(DefaultsKey.clipboardAutoClearOnScreenLock) private var autoClearOnScreenLock = false
+    @State private var editingSnippets = false
 
     private var text: ClipboardFeatureStrings {
         FeatureStrings.clipboard(l10n.language)
@@ -131,8 +132,28 @@ struct ClipboardSettings: View {
             }
 
             if AppFeature.clipboardHistory.isAvailable {
+                Section {
+                    Text(text.snippetsCaption)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    LabeledContent(text.snippetsCountLabel) {
+                        HStack(spacing: 8) {
+                            Text("\(history.snippets.count)")
+                                .foregroundStyle(.secondary)
+                            Button(text.snippetsManage) { editingSnippets = true }
+                        }
+                    }
+                } header: {
+                    Text(text.snippetsTitle)
+                }
+            }
+
+            if AppFeature.clipboardHistory.isAvailable {
                 clipboardStatsSection
             }
+        }
+        .sheet(isPresented: $editingSnippets) {
+            ClipboardSnippetsSheet(text: text)
         }
         .formStyle(.grouped)
         .onAppear {

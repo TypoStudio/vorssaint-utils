@@ -1626,6 +1626,166 @@ enum CommandBarCatalog {
         return nil
     }
 
+    // MARK: - Made on the spot
+
+    /// The pinned first row when what was typed asks for a string to be made:
+    /// a password, a run of hex, a UUID or a digest. Enter copies it.
+    ///
+    /// The value is handed in rather than generated here, because a random one
+    /// has to survive every redraw of the same query: generating it in the row
+    /// would deal a new password on every keystroke and on every refresh some
+    /// other source triggers.
+    static func generatorEntry(_ result: CommandBarGenerator.Result,
+                               bar: CommandBarFeatureStrings) -> CommandBarEntry {
+        let label: String
+        switch result.kind {
+        case .password: label = bar.generatorPassword
+        case .hex: label = bar.generatorHex
+        case .uuid: label = bar.generatorUUID
+        case .md5: label = String(format: bar.generatorHashFormat, "MD5")
+        case .sha256: label = String(format: bar.generatorHashFormat, "SHA-256")
+        }
+        return CommandBarEntry(
+            id: "gen.result",
+            title: result.value,
+            subtitle: "\(label) · \(bar.copyHint)",
+            icon: .symbol(result.kind == .uuid ? "number" : "dice"),
+            isAnswer: true,
+            countsUsage: false,
+            run: { _ in copyAnswer(result.value) })
+    }
+
+    // MARK: - The dictionary
+
+    /// Rows for what Naver's dictionaries answered: the first result or two
+    /// out of each one that has the word, which is the same breadth the site's
+    /// own combined page shows. Return opens the entry, because the reading
+    /// worth doing is longer than a row.
+    ///
+    /// The first row leads the list the way a sum's answer does, so a lookup
+    /// that has landed is never underneath whatever else matched the letters.
+    static func dictionaryEntries(_ result: CommandBarDictionaryLookup.Result,
+                                  bar: CommandBarFeatureStrings,
+                                  limit: Int = 9) -> [CommandBarEntry] {
+        let openAll = CommandBarEntry(
+            id: "dict.all",
+            title: bar.dictionaryOpen,
+            subtitle: result.word,
+            icon: .symbol("safari"),
+            isAnswer: result.entries.isEmpty,
+            countsUsage: false,
+            run: { _ in
+                guard let url = CommandBarDictionary.searchPageURL(for: result.word) else { return }
+                NSWorkspace.shared.open(url)
+            })
+        guard !result.entries.isEmpty else {
+            return [CommandBarEntry(
+                id: "dict.empty",
+                title: bar.dictionaryNoResult,
+                subtitle: result.word,
+                icon: .symbol("character.book.closed"),
+                isAnswer: true,
+                countsUsage: false,
+                run: { _ in
+                    guard let url = CommandBarDictionary.searchPageURL(for: result.word) else { return }
+                    NSWorkspace.shared.open(url)
+                })]
+        }
+        var rows = result.entries.prefix(limit).enumerated().map { index, entry in
+            CommandBarEntry(
+                id: "dict.entry.\(index)",
+                title: "\(entry.word) · \(entry.meaning)",
+                subtitle: entry.dictionaryName,
+                icon: .symbol("character.book.closed"),
+                isAnswer: index == 0,
+                countsUsage: false,
+                run: { _ in
+                    guard let url = entry.link
+                        ?? CommandBarDictionary.searchPageURL(for: result.word) else { return }
+                    NSWorkspace.shared.open(url)
+                })
+        }
+        rows.append(openAll)
+        return rows
+    }
+
+    // MARK: - Teaching the typed commands
+
+    /// The rows that say what a half-typed command does and what it reads
+    /// after its name. Return completes the name into the field rather than
+    /// running anything: there is nothing to run yet, and the next thing the
+    /// person needs to type is the argument.
+    static func hintEntries(for query: String,
+                            bar: CommandBarFeatureStrings,
+                            isEnabled: (CommandBarSource) -> Bool) -> [CommandBarEntry] {
+        CommandBarHints.matching(query)
+            .filter { isEnabled($0.source) }
+            .map { hintRow($0, bar: bar) }
+    }
+
+    /// Every command one source answers to, for browsing its chip. The same
+    /// rows the half-typed hints show, listed rather than guessed at: a
+    /// command nobody has heard of is not found by typing towards it.
+    static func commandEntries(for source: CommandBarSource,
+                               bar: CommandBarFeatureStrings) -> [CommandBarEntry] {
+        CommandBarHints.all
+            .filter { $0.source == source }
+            .map { hintRow($0, bar: bar) }
+    }
+
+    private static func hintRow(_ hint: CommandBarHints.Hint,
+                                bar: CommandBarFeatureStrings) -> CommandBarEntry {
+        let argument: String?
+        switch hint.argument {
+        case .word: argument = bar.hintArgumentWord
+        case .text: argument = bar.hintArgumentText
+        case .length: argument = bar.hintArgumentLength
+        case .passwordCounts: argument = bar.hintArgumentPasswordCounts
+        case nil: argument = nil
+        }
+        let explanation: String
+        switch hint.trigger {
+        case "dic", "사전": explanation = bar.hintDictionary
+        case "pwd": explanation = bar.hintPassword
+        case "hex": explanation = bar.hintHex
+        case "uuid": explanation = bar.hintUUID
+        default: explanation = String(format: bar.hintHashFormat, hint.trigger.uppercased())
+        }
+        let completed = hint.completion
+        return CommandBarEntry(
+            id: "hint.\(hint.trigger)",
+            title: argument.map { "\(hint.trigger) \($0)" } ?? hint.trigger,
+            subtitle: explanation,
+            icon: .symbol(hint.source == .dictionary ? "character.book.closed" : "dice"),
+            countsUsage: false,
+            // Tab and the ranking both read this instead of the title.
+            matchTitle: completed,
+            keepsBarOpen: true,
+            run: { _ in CommandBarService.shared.query = completed })
+    }
+
+    /// What the dictionary chip shows before it has been given a word, and
+    /// while the answer for one is still coming: the alternative is the
+    /// fruitless-search state, which says nothing was found at the exact
+    /// moment nothing has been asked yet.
+    static func dictionaryPromptEntry(word: String,
+                                      bar: CommandBarFeatureStrings) -> CommandBarEntry {
+        CommandBarEntry(
+            id: "dict.prompt",
+            title: word.isEmpty ? bar.dictionaryPrompt : word,
+            subtitle: word.isEmpty ? bar.hintDictionary : bar.dictionaryOpen,
+            icon: .symbol("character.book.closed"),
+            countsUsage: false,
+            // With no word there is nothing to open, so the row holds the
+            // space and waits rather than closing the bar on nothing.
+            keepsBarOpen: word.isEmpty,
+            run: { _ in
+                guard !word.isEmpty,
+                      let url = CommandBarDictionary.searchPageURL(for: word) else { return }
+                NSWorkspace.shared.open(url)
+            })
+    }
+
     /// A row that opens what was typed as a web address, offered only when the
     /// text reads like one. It leads the list the way the calculator answer
     /// does, so Return opens it at once.

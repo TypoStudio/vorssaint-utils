@@ -20,6 +20,7 @@ struct MetricsTests {
                 SystemMonitorCPUTests.run(suite)
             }),
             ("clipboard", { ClipboardFeatureTests.run(suite) }),
+            ("fork", { ForkFeatureTests.run(suite) }),
             ("pointer-input", {
                 PointerOnDisplayContract.run(suite)
                 PointerInputFeatureTests.run(suite)

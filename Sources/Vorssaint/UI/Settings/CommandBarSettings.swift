@@ -156,6 +156,28 @@ struct CommandBarSettings: View {
                     .foregroundStyle(.secondary)
             }
 
+            // The typed commands say what they take, listed where the switch
+            // that turns them on already is. Nothing in the bar's own list
+            // names them, so a switch with no words next to it is a feature
+            // nobody finds twice.
+            ForEach([CommandBarSource.generator, .dictionary], id: \.self) { source in
+                Section {
+                    ForEach(commands(of: source), id: \.trigger) { command in
+                        LabeledContent {
+                            Text(command.explanation)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.trailing)
+                        } label: {
+                            Text(command.usage)
+                                .font(.body.monospaced())
+                        }
+                    }
+                } header: {
+                    Label(title(for: source), systemImage: source.symbolName)
+                }
+            }
+
             Section {
                 Text(text.filesCaption)
                     .font(.caption)
@@ -457,6 +479,20 @@ struct CommandBarSettings: View {
         }
     }
 
+    /// One typed command, written the way the bar's own hint row writes it,
+    /// so Settings and the bar can never disagree about what it takes.
+    private struct CommandRow {
+        let trigger: String
+        let usage: String
+        let explanation: String
+    }
+
+    private func commands(of source: CommandBarSource) -> [CommandRow] {
+        CommandBarCatalog.commandEntries(for: source, bar: text).map {
+            CommandRow(trigger: $0.id, usage: $0.title, explanation: $0.subtitle)
+        }
+    }
+
     private func title(for source: CommandBarSource) -> String {
         switch source {
         case .actions: return text.sourceActions
@@ -473,6 +509,8 @@ struct CommandBarSettings: View {
         case .folders: return text.sourceFolders
         case .answers: return text.sourceAnswers
         case .calculator: return text.sourceCalculator
+        case .generator: return text.sourceGenerator
+        case .dictionary: return text.sourceDictionary
         case .selection: return text.sourceSelection
         case .links: return text.linksTitle
         case .files: return text.sourceFiles

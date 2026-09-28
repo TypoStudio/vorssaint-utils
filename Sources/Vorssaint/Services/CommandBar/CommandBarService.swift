@@ -141,6 +141,13 @@ final class CommandBarService: ObservableObject {
     private var catalog: [CommandBarEntry] = [] { didSet { foldedSections[.catalog] = nil } }
     let scriptRunner = CommandBarScriptRunner()
     let fileSearch = CommandBarFileSearch()
+    let dictionary = CommandBarDictionaryLookup()
+    /// The last value a generator query produced, kept for exactly the letters
+    /// that produced it. A password redrawn is a different password, and the
+    /// list is rebuilt on every keystroke and on every source that answers
+    /// late, so without this the row would never sit still long enough to be
+    /// read, let alone copied.
+    private var generatorAnswer: (query: String, result: CommandBarGenerator.Result)?
     /// Which row answered which few letters, for as long as the app runs. Not
     /// stored: the bar forgets everything typed into it when it goes.
     private var queryMemory = CommandBarQueryMemory()
@@ -231,6 +238,7 @@ final class CommandBarService: ObservableObject {
         hotkey.onPress = { [weak self] in self?.toggle() }
         scriptRunner.onResult = { [weak self] in self?.refreshResults() }
         fileSearch.onResult = { [weak self] in self?.refreshResults() }
+        dictionary.onResult = { [weak self] in self?.refreshResults() }
     }
 
     // MARK: - Lifecycle
@@ -334,6 +342,8 @@ final class CommandBarService: ObservableObject {
         deferredRowShortcut.cancel()
         scriptRunner.reset()
         fileSearch.reset()
+        dictionary.reset()
+        generatorAnswer = nil
         let id = UUID()
         presentationID = id
         presentationLifecycle.beginHome(id)
@@ -404,6 +414,8 @@ final class CommandBarService: ObservableObject {
         deferredRowShortcut.cancel()
         scriptRunner.reset()
         fileSearch.reset()
+        dictionary.reset()
+        generatorAnswer = nil
         // Closing while listening for a combination must give every global key
         // back, or the whole app would go quiet until the next relaunch.
         if case .capturingShortcut = mode { endCapturingShortcut() }
@@ -715,7 +727,7 @@ final class CommandBarService: ObservableObject {
     /// The chip order. Fixed, so the row never reshuffles under a pointer.
     private static let chipOrder: [CommandBarSource] = [
         .actions, .apps, .clipboard, .windows, .menus, .settingsPages, .macSettings,
-        .snippets, .emoji, .folders, .links,
+        .snippets, .emoji, .generator, .dictionary, .folders, .links,
     ]
 
     /// Walks the chips with the arrow keys. Only while the field is empty:
@@ -800,6 +812,10 @@ final class CommandBarService: ObservableObject {
             }
         case .killProcess:
             return AppFeature.killProcess.isAvailable
+        case .generator, .dictionary:
+            // Neither has rows waiting anywhere to be counted: one lists the
+            // commands it answers to, the other has to be given a word first.
+            return true
         case .quitApps, .uninstallApps, .answers, .calculator, .selection, .files:
             return false
         }
@@ -828,7 +844,11 @@ final class CommandBarService: ObservableObject {
                 self?.paste(entry)
             }
         case .killProcess: rows = killProcessEntries
-        case .quitApps, .answers, .calculator, .selection, .files:
+        case .generator:
+            rows = CommandBarCatalog.commandEntries(for: .generator, bar: bar)
+        // The dictionary is answered before this point: its rows come from the
+        // network for whatever is typed, not from a list that can be filtered.
+        case .dictionary, .quitApps, .answers, .calculator, .selection, .files:
             rows = []
         }
         return rows.filter { !hidden.contains($0.stableKey) }
@@ -861,6 +881,8 @@ final class CommandBarService: ObservableObject {
         case .folders: return bar.sourceFolders
         case .answers: return bar.sourceAnswers
         case .calculator: return bar.sourceCalculator
+        case .generator: return bar.sourceGenerator
+        case .dictionary: return bar.sourceDictionary
         case .selection: return bar.sourceSelection
         case .files: return bar.sourceFiles
         case .links: return bar.linksTitle
@@ -1382,7 +1404,8 @@ final class CommandBarService: ObservableObject {
         case .snippets: return bar.kindSnippet
         case .folders: return bar.kindFolder
         case .actions, .apps, .menus, .windows, .quitApps, .uninstallApps, .settingsPages,
-             .macSettings, .clipboard, .emoji, .calculator, .selection, .files, .killProcess:
+             .macSettings, .clipboard, .emoji, .calculator, .generator, .dictionary, .selection,
+             .files, .killProcess:
             return entry.subtitle.isEmpty ? bar.everythingTitle : entry.subtitle
         }
     }
@@ -1428,6 +1451,21 @@ final class CommandBarService: ObservableObject {
             // pending one goes: it would land on a list that has no room for
             // it and refresh the bar for nothing.
             fileSearch.cancelPending()
+            // The dictionary chip is the one category whose rows are not a
+            // list to filter: whatever is typed inside it IS the word, asked
+            // for without the trigger the search path needs.
+            if category == .dictionary {
+                if trimmed.isEmpty {
+                    dictionary.cancelPending()
+                } else if let result = dictionary.cachedResult(for: trimmed) {
+                    dictionary.cancelPending()
+                    return CommandBarCatalog.dictionaryEntries(result, bar: bar)
+                } else {
+                    dictionary.schedule(word: trimmed)
+                }
+                return [CommandBarCatalog.dictionaryPromptEntry(word: trimmed, bar: bar)]
+            }
+            dictionary.cancelPending()
             let hidden = hiddenCache
             let pool = category == .clipboard
                 ? CommandBarCatalog.clipboardEntries(matching: trimmed, bar: bar, limit: 40) {
@@ -1497,6 +1535,41 @@ final class CommandBarService: ObservableObject {
         let answer = isEnabled(.calculator)
             ? CommandBarCatalog.answerEntry(for: trimmed, bar: bar)
             : nil
+        // A string asked to be made answers the same way a sum does, and holds
+        // still for as long as the query does.
+        var generated: CommandBarEntry?
+        if isEnabled(.generator) {
+            if let held = generatorAnswer, held.query == trimmed {
+                generated = CommandBarCatalog.generatorEntry(held.result, bar: bar)
+            } else if let result = CommandBarGenerator.evaluate(trimmed) {
+                generatorAnswer = (trimmed, result)
+                generated = CommandBarCatalog.generatorEntry(result, bar: bar)
+            } else {
+                generatorAnswer = nil
+            }
+        }
+
+        // The dictionary, once it has answered. Asked for by name and only by
+        // name, and asked for at all only while the source is on: this is the
+        // one row that leaves the Mac to be filled in.
+        var dictionaryRows: [CommandBarEntry] = []
+        if isEnabled(.dictionary), let word = CommandBarDictionary.word(in: trimmed) {
+            if let result = dictionary.cachedResult(for: word) {
+                dictionary.cancelPending()
+                dictionaryRows = CommandBarCatalog.dictionaryEntries(result, bar: bar)
+            } else {
+                dictionary.schedule(word: word)
+            }
+        } else {
+            dictionary.cancelPending()
+        }
+
+        // What a half-typed command does, while it is still half typed. Below
+        // the answers, so a command that already ran leads its own hint.
+        let hints = CommandBarCatalog.hintEntries(for: trimmed, bar: bar) { [weak self] source in
+            self?.isEnabled(source) ?? false
+        }
+
         // A web address typed into the bar is opened, not searched: the row
         // leads so Return opens it at once, the way a sum's answer does.
         let openURL = CommandBarCatalog.openURLEntry(for: trimmed, bar: bar)
@@ -1666,6 +1739,9 @@ final class CommandBarService: ObservableObject {
         var counts: [String: Int] = [:]
         var result: [CommandBarEntry] = []
         if let answer { result.append(answer) }
+        if let generated { result.append(generated) }
+        result.append(contentsOf: dictionaryRows)
+        result.append(contentsOf: hints)
         if let openURL { result.append(openURL) }
         if let scriptAnswer { result.append(scriptAnswer) }
         for index in ranked {

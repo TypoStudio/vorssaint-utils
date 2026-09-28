@@ -208,7 +208,17 @@ extension ClipboardFeatureStrings {
         menuBarPreview: "메뉴 막대에 최근 복사 항목 표시",
         menuBarPreviewCaption: "아이콘 옆에 최근 복사한 내용의 축약된 미리보기를 표시합니다. 클릭하면 기록이 열립니다.",
         menuBarPreviewLength: "미리보기 길이",
-        menuBarPreviewLengthSuffix: "자"
+        menuBarPreviewLengthSuffix: "자",
+        snippetsTitle: "스니펫",
+        snippetsCaption: "일부러 남겨 두는 텍스트입니다. 기록을 검색할 때 라벨로도 내용으로도 찾을 수 있습니다.",
+        snippetsManage: "관리",
+        snippetsCountLabel: "저장됨",
+        snippetsAdd: "스니펫 추가",
+        snippetsRemove: "스니펫 삭제",
+        snippetsLabel: "라벨",
+        snippetsValue: "붙여넣을 값",
+        snippetsUntitled: "제목 없음",
+        snippetsEmpty: "왼쪽에서 스니펫을 고르거나 새로 추가하세요."
     )
 }
 
@@ -584,7 +594,17 @@ struct ClipboardFeatureStrings {
         menuBarPreview: "Show latest copy in the menu bar",
         menuBarPreviewCaption: "Shows a shortened preview of your last copy next to the icon. Click it to open the history.",
         menuBarPreviewLength: "Preview length",
-        menuBarPreviewLengthSuffix: "characters"
+        menuBarPreviewLengthSuffix: "characters",
+        snippetsTitle: "Snippets",
+        snippetsCaption: "Text you keep on purpose, found by name or by what is in it when you search the history.",
+        snippetsManage: "Manage",
+        snippetsCountLabel: "Saved",
+        snippetsAdd: "Add a snippet",
+        snippetsRemove: "Remove the snippet",
+        snippetsLabel: "Label",
+        snippetsValue: "Text to paste",
+        snippetsUntitled: "Untitled",
+        snippetsEmpty: "Pick a snippet on the left, or add one."
     )
 
     static let ptBR = ClipboardFeatureStrings(
@@ -645,7 +665,17 @@ struct ClipboardFeatureStrings {
         menuBarPreview: "Mostrar a última cópia na barra de menus",
         menuBarPreviewCaption: "Mostra uma prévia resumida da sua última cópia ao lado do ícone. Clique nela para abrir o histórico.",
         menuBarPreviewLength: "Tamanho da prévia",
-        menuBarPreviewLengthSuffix: "caracteres"
+        menuBarPreviewLengthSuffix: "caracteres",
+        snippetsTitle: "Trechos",
+        snippetsCaption: "Textos que você guarda de propósito, achados pelo nome ou pelo conteúdo ao buscar no histórico.",
+        snippetsManage: "Gerenciar",
+        snippetsCountLabel: "Salvos",
+        snippetsAdd: "Adicionar trecho",
+        snippetsRemove: "Remover o trecho",
+        snippetsLabel: "Rótulo",
+        snippetsValue: "Texto a colar",
+        snippetsUntitled: "Sem título",
+        snippetsEmpty: "Escolha um trecho à esquerda, ou adicione um."
     )
 
     static let tr = ClipboardFeatureStrings(
@@ -706,7 +736,17 @@ struct ClipboardFeatureStrings {
         menuBarPreview: "Menü çubuğunda son kopyalananı göster",
         menuBarPreviewCaption: "Simgenin yanında son kopyalananın kısaltılmış bir önizlemesini gösterir. Geçmişi açmak için üzerine tıkla.",
         menuBarPreviewLength: "Önizleme uzunluğu",
-        menuBarPreviewLengthSuffix: "karakter"
+        menuBarPreviewLengthSuffix: "karakter",
+        snippetsTitle: "Parçacıklar",
+        snippetsCaption: "Bilerek sakladığınız metinler; geçmişte ararken adıyla ya da içeriğiyle bulunur.",
+        snippetsManage: "Yönet",
+        snippetsCountLabel: "Kayıtlı",
+        snippetsAdd: "Parçacık ekle",
+        snippetsRemove: "Parçacığı kaldır",
+        snippetsLabel: "Etiket",
+        snippetsValue: "Yapıştırılacak metin",
+        snippetsUntitled: "Adsız",
+        snippetsEmpty: "Soldan bir parçacık seçin ya da yeni ekleyin."
     )
 
     static let ru = ClipboardFeatureStrings(
@@ -767,7 +807,17 @@ struct ClipboardFeatureStrings {
         menuBarPreview: "Показывать последнюю скопированную запись в строке меню",
         menuBarPreviewCaption: "Показывает сокращённый предпросмотр последней скопированной записи рядом со значком. Нажмите на него, чтобы открыть историю.",
         menuBarPreviewLength: "Длина предпросмотра",
-        menuBarPreviewLengthSuffix: "символов"
+        menuBarPreviewLengthSuffix: "символов",
+        snippetsTitle: "Заготовки",
+        snippetsCaption: "Текст, сохранённый намеренно; при поиске в истории находится по названию или по содержимому.",
+        snippetsManage: "Управлять",
+        snippetsCountLabel: "Сохранено",
+        snippetsAdd: "Добавить заготовку",
+        snippetsRemove: "Удалить заготовку",
+        snippetsLabel: "Название",
+        snippetsValue: "Текст для вставки",
+        snippetsUntitled: "Без названия",
+        snippetsEmpty: "Выберите заготовку слева или добавьте новую."
     )
 
     static let es = ClipboardFeatureStrings(
@@ -828,7 +878,17 @@ struct ClipboardFeatureStrings {
         menuBarPreview: "Mostrar la última copia en la barra de menús",
         menuBarPreviewCaption: "Muestra una vista previa abreviada de tu última copia junto al icono. Haz clic para abrir el historial.",
         menuBarPreviewLength: "Longitud de la vista previa",
-        menuBarPreviewLengthSuffix: "caracteres"
+        menuBarPreviewLengthSuffix: "caracteres",
+        snippetsTitle: "Fragmentos",
+        snippetsCaption: "Textos que guardas a propósito, hallados por nombre o por su contenido al buscar en el historial.",
+        snippetsManage: "Gestionar",
+        snippetsCountLabel: "Guardados",
+        snippetsAdd: "Añadir fragmento",
+        snippetsRemove: "Quitar el fragmento",
+        snippetsLabel: "Etiqueta",
+        snippetsValue: "Texto que se pega",
+        snippetsUntitled: "Sin título",
+        snippetsEmpty: "Elige un fragmento a la izquierda, o añade uno."
     )
 
     static let sk = ClipboardFeatureStrings(
@@ -889,7 +949,17 @@ struct ClipboardFeatureStrings {
         menuBarPreview: "Zobraziť poslednú kópiu v lište",
         menuBarPreviewCaption: "Zobrazí skrátený náhľad poslednej kópie vedľa ikony. Kliknutím naň otvoríte históriu.",
         menuBarPreviewLength: "Dĺžka náhľadu",
-        menuBarPreviewLengthSuffix: "znakov"
+        menuBarPreviewLengthSuffix: "znakov",
+        snippetsTitle: "Úryvky",
+        snippetsCaption: "Text, ktorý si zámerne uchovávate; pri hľadaní v histórii ho nájdete podľa názvu alebo obsahu.",
+        snippetsManage: "Spravovať",
+        snippetsCountLabel: "Uložené",
+        snippetsAdd: "Pridať úryvok",
+        snippetsRemove: "Odstrániť úryvok",
+        snippetsLabel: "Označenie",
+        snippetsValue: "Text na vloženie",
+        snippetsUntitled: "Bez názvu",
+        snippetsEmpty: "Vyberte úryvok vľavo alebo pridajte nový."
     )
 
     static let de = ClipboardFeatureStrings(
@@ -950,7 +1020,17 @@ struct ClipboardFeatureStrings {
         menuBarPreview: "Letzte Kopie in der Menüleiste anzeigen",
         menuBarPreviewCaption: "Zeigt eine gekürzte Vorschau deiner letzten Kopie neben dem Symbol. Klicke darauf, um den Verlauf zu öffnen.",
         menuBarPreviewLength: "Vorschaulänge",
-        menuBarPreviewLengthSuffix: "Zeichen"
+        menuBarPreviewLengthSuffix: "Zeichen",
+        snippetsTitle: "Textbausteine",
+        snippetsCaption: "Text, den Sie bewusst aufheben; bei der Suche im Verlauf über den Namen oder den Inhalt zu finden.",
+        snippetsManage: "Verwalten",
+        snippetsCountLabel: "Gesichert",
+        snippetsAdd: "Baustein hinzufügen",
+        snippetsRemove: "Baustein entfernen",
+        snippetsLabel: "Bezeichnung",
+        snippetsValue: "Einzufügender Text",
+        snippetsUntitled: "Ohne Titel",
+        snippetsEmpty: "Links einen Baustein wählen oder einen anlegen."
     )
 
     static let fr = ClipboardFeatureStrings(
@@ -1011,7 +1091,17 @@ struct ClipboardFeatureStrings {
         menuBarPreview: "Afficher la dernière copie dans la barre des menus",
         menuBarPreviewCaption: "Affiche un aperçu raccourci de votre dernière copie à côté de l’icône. Cliquez dessus pour ouvrir l’historique.",
         menuBarPreviewLength: "Longueur de l’aperçu",
-        menuBarPreviewLengthSuffix: "caractères"
+        menuBarPreviewLengthSuffix: "caractères",
+        snippetsTitle: "Fragments",
+        snippetsCaption: "Du texte gardé exprès, trouvé par son nom ou par son contenu quand vous cherchez dans l’historique.",
+        snippetsManage: "Gérer",
+        snippetsCountLabel: "Enregistrés",
+        snippetsAdd: "Ajouter un fragment",
+        snippetsRemove: "Retirer le fragment",
+        snippetsLabel: "Libellé",
+        snippetsValue: "Texte à coller",
+        snippetsUntitled: "Sans titre",
+        snippetsEmpty: "Choisissez un fragment à gauche, ou ajoutez-en un."
     )
 
     static let it = ClipboardFeatureStrings(
@@ -1072,7 +1162,17 @@ struct ClipboardFeatureStrings {
         menuBarPreview: "Mostra l’ultima copia nella barra dei menu",
         menuBarPreviewCaption: "Mostra un’anteprima abbreviata dell’ultima copia accanto all’icona. Fai clic per aprire la cronologia.",
         menuBarPreviewLength: "Lunghezza dell’anteprima",
-        menuBarPreviewLengthSuffix: "caratteri"
+        menuBarPreviewLengthSuffix: "caratteri",
+        snippetsTitle: "Frammenti",
+        snippetsCaption: "Testo che tieni di proposito, trovato per nome o per contenuto quando cerchi nella cronologia.",
+        snippetsManage: "Gestisci",
+        snippetsCountLabel: "Salvati",
+        snippetsAdd: "Aggiungi frammento",
+        snippetsRemove: "Rimuovi il frammento",
+        snippetsLabel: "Etichetta",
+        snippetsValue: "Testo da incollare",
+        snippetsUntitled: "Senza titolo",
+        snippetsEmpty: "Scegli un frammento a sinistra, o aggiungine uno."
     )
 
     static let ja = ClipboardFeatureStrings(
@@ -1133,7 +1233,17 @@ struct ClipboardFeatureStrings {
         menuBarPreview: "メニューバーに直前のコピーを表示",
         menuBarPreviewCaption: "アイコンの横に直前のコピーの短縮プレビューを表示します。クリックすると履歴が開きます。",
         menuBarPreviewLength: "プレビューの長さ",
-        menuBarPreviewLengthSuffix: "文字"
+        menuBarPreviewLengthSuffix: "文字",
+        snippetsTitle: "スニペット",
+        snippetsCaption: "意図して残しておくテキストです。履歴の検索で名前からも中身からも見つかります。",
+        snippetsManage: "管理",
+        snippetsCountLabel: "保存済み",
+        snippetsAdd: "スニペットを追加",
+        snippetsRemove: "スニペットを削除",
+        snippetsLabel: "ラベル",
+        snippetsValue: "貼り付けるテキスト",
+        snippetsUntitled: "名称未設定",
+        snippetsEmpty: "左からスニペットを選ぶか、新しく追加してください。"
     )
 
     static let zhHans = ClipboardFeatureStrings(
@@ -1194,7 +1304,17 @@ struct ClipboardFeatureStrings {
         menuBarPreview: "在菜单栏显示最近拷贝的内容",
         menuBarPreviewCaption: "在图标旁显示最近拷贝内容的简短预览，点击即可打开历史记录。",
         menuBarPreviewLength: "预览长度",
-        menuBarPreviewLengthSuffix: "个字符"
+        menuBarPreviewLengthSuffix: "个字符",
+        snippetsTitle: "片段",
+        snippetsCaption: "你特意保留的文本，在搜索历史时可按名称或内容找到。",
+        snippetsManage: "管理",
+        snippetsCountLabel: "已保存",
+        snippetsAdd: "添加片段",
+        snippetsRemove: "删除片段",
+        snippetsLabel: "标签",
+        snippetsValue: "要粘贴的文本",
+        snippetsUntitled: "未命名",
+        snippetsEmpty: "在左侧选择一个片段，或新建一个。"
     )
 
     static let zhTW = ClipboardFeatureStrings(
@@ -1255,7 +1375,17 @@ struct ClipboardFeatureStrings {
         menuBarPreview: "在選單列顯示最近複製的內容",
         menuBarPreviewCaption: "在圖示旁顯示最近複製內容的簡短預覽，點選即可開啟紀錄。",
         menuBarPreviewLength: "預覽長度",
-        menuBarPreviewLengthSuffix: "個字元"
+        menuBarPreviewLengthSuffix: "個字元",
+        snippetsTitle: "片段",
+        snippetsCaption: "你特意保留的文字，在搜尋記錄時可依名稱或內容找到。",
+        snippetsManage: "管理",
+        snippetsCountLabel: "已儲存",
+        snippetsAdd: "加入片段",
+        snippetsRemove: "刪除片段",
+        snippetsLabel: "標籤",
+        snippetsValue: "要貼上的文字",
+        snippetsUntitled: "未命名",
+        snippetsEmpty: "在左側選擇一個片段，或新增一個。"
     )
 
     static let zhHK = ClipboardFeatureStrings(
@@ -1316,8 +1446,28 @@ struct ClipboardFeatureStrings {
         menuBarPreview: "在選單列顯示最近複製的內容",
         menuBarPreviewCaption: "在圖示旁顯示最近複製內容的簡短預覽，按一下即可開啟記錄。",
         menuBarPreviewLength: "預覽長度",
-        menuBarPreviewLengthSuffix: "個字元"
+        menuBarPreviewLengthSuffix: "個字元",
+        snippetsTitle: "片段",
+        snippetsCaption: "你特登留低嘅文字，喺搜尋記錄時可以用名稱或者內容搵到。",
+        snippetsManage: "管理",
+        snippetsCountLabel: "已儲存",
+        snippetsAdd: "加入片段",
+        snippetsRemove: "刪除片段",
+        snippetsLabel: "標籤",
+        snippetsValue: "要貼上嘅文字",
+        snippetsUntitled: "未命名",
+        snippetsEmpty: "喺左邊揀一個片段，或者新增一個。"
     )
+    let snippetsTitle: String
+    let snippetsCaption: String
+    let snippetsManage: String
+    let snippetsCountLabel: String
+    let snippetsAdd: String
+    let snippetsRemove: String
+    let snippetsLabel: String
+    let snippetsValue: String
+    let snippetsUntitled: String
+    let snippetsEmpty: String
 }
 
 struct WindowLayoutFeatureStrings {
@@ -3126,7 +3276,17 @@ extension ClipboardFeatureStrings {
         menuBarPreview: "Показувати останню копію на смузі меню",
         menuBarPreviewCaption: "Показує скорочений перегляд останнього скопійованого вмісту поруч зі значком. Натисніть, щоб відкрити історію.",
         menuBarPreviewLength: "Довжина перегляду",
-        menuBarPreviewLengthSuffix: "симв."
+        menuBarPreviewLengthSuffix: "симв.",
+        snippetsTitle: "Заготовки",
+        snippetsCaption: "Текст, який ви зберігаєте навмисно; під час пошуку в історії його можна знайти за назвою або вмістом.",
+        snippetsManage: "Керувати",
+        snippetsCountLabel: "Збережено",
+        snippetsAdd: "Додати заготовку",
+        snippetsRemove: "Видалити заготовку",
+        snippetsLabel: "Назва",
+        snippetsValue: "Текст для вставлення",
+        snippetsUntitled: "Без назви",
+        snippetsEmpty: "Виберіть заготовку ліворуч або додайте нову."
     )
 }
 

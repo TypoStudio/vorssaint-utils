@@ -58,6 +58,11 @@ final class ClipboardHistoryService: ObservableObject {
         }
     }
     @Published private(set) var quickSelectionIndex = 0
+    /// Text kept on purpose, under a name. Read once here rather than on every
+    /// keystroke of a search: the list is short and the search asks for it on
+    /// every render.
+    @Published private(set) var snippets: [ClipboardSnippet] = ClipboardSnippetStore.decode(
+        UserDefaults.standard.data(forKey: DefaultsKey.clipboardSnippets))
     @Published private(set) var quickSelectionIsVisible = false
     @Published private(set) var quickWindowPresentationID = UUID()
     @Published private(set) var quickPreviewPresented = UserDefaults.standard.bool(
@@ -375,6 +380,36 @@ final class ClipboardHistoryService: ObservableObject {
         filteredEntries(matching: quickQuery)
     }
 
+    /// The saved snippets worth offering for what was typed. Only ever while
+    /// searching: an empty field is the history and nothing else, the way it
+    /// has always been.
+    var filteredQuickSnippets: [ClipboardSnippet] {
+        ClipboardSnippetStore.matching(quickQuery, in: snippets)
+    }
+
+    /// Snippets first, then the history. One cursor over both, so the arrow
+    /// keys, Return and the numbered shortcuts never have to know which of the
+    /// two lists they are in.
+    private var quickSelectionCount: Int {
+        filteredQuickSnippets.count + filteredQuickEntries.count
+    }
+
+    /// The snippet under the cursor, or nil whenever the cursor has moved past
+    /// them into the history.
+    var selectedQuickSnippet: ClipboardSnippet? {
+        let matching = filteredQuickSnippets
+        guard !matching.isEmpty else { return nil }
+        let index = clampedQuickSelectionIndex(for: quickSelectionCount)
+        return index < matching.count ? matching[index] : nil
+    }
+
+    func setSnippets(_ list: [ClipboardSnippet]) {
+        let cleaned = ClipboardSnippetStore.sanitized(list)
+        snippets = cleaned
+        UserDefaults.standard.set(ClipboardSnippetStore.encode(cleaned),
+                                  forKey: DefaultsKey.clipboardSnippets)
+    }
+
     var selectedQuickEntryID: UUID? {
         selectedQuickEntry?.id
     }
@@ -383,10 +418,16 @@ final class ClipboardHistoryService: ObservableObject {
         quickBatchEntries.count
     }
 
+    /// Nil while a snippet is what is selected, which is what keeps pinning,
+    /// deleting and batch-selecting off a row that is none of the history's
+    /// business.
     var selectedQuickEntry: ClipboardHistoryEntry? {
         let matches = filteredQuickEntries
         guard !matches.isEmpty else { return nil }
-        return matches[clampedQuickSelectionIndex(for: matches.count)]
+        let index = clampedQuickSelectionIndex(for: quickSelectionCount)
+            - filteredQuickSnippets.count
+        guard index >= 0, matches.indices.contains(index) else { return nil }
+        return matches[index]
     }
 
     func isQuickBatchSelected(_ entry: ClipboardHistoryEntry) -> Bool {
@@ -395,7 +436,7 @@ final class ClipboardHistoryService: ObservableObject {
 
     func toggleQuickBatchSelection(_ entry: ClipboardHistoryEntry) {
         if let index = filteredQuickEntries.firstIndex(where: { $0.id == entry.id }) {
-            quickSelectionIndex = index
+            quickSelectionIndex = index + filteredQuickSnippets.count
         }
         var selected = quickBatchEntryIDs
         if selected.contains(entry.id) {
@@ -411,12 +452,13 @@ final class ClipboardHistoryService: ObservableObject {
     func extendQuickBatchSelection(to entry: ClipboardHistoryEntry) {
         let matches = filteredQuickEntries
         guard let target = matches.firstIndex(where: { $0.id == entry.id }) else { return }
-        let anchor = clampedQuickSelectionIndex(for: matches.count)
+        let offset = filteredQuickSnippets.count
+        let anchor = clampedQuickSelectionIndex(for: quickSelectionCount) - offset
         let ids = ClipboardHistoryBatch.rangeSelectionIDs(allIDs: matches.map(\.id),
                                                           anchor: anchor,
                                                           target: target)
         quickBatchEntryIDs = quickBatchEntryIDs.union(ids)
-        quickSelectionIndex = target
+        quickSelectionIndex = target + offset
         quickSelectionIsVisible = true
     }
 
@@ -486,12 +528,41 @@ final class ClipboardHistoryService: ObservableObject {
     }
 
     func copyQuickEntry(at index: Int) {
+        let matching = filteredQuickSnippets
+        if matching.indices.contains(index) {
+            copyQuickSnippet(matching[index])
+            return
+        }
         let matches = filteredQuickEntries
-        guard matches.indices.contains(index) else { return }
-        copyQuickEntry(matches[index])
+        let offset = index - matching.count
+        guard matches.indices.contains(offset) else { return }
+        copyQuickEntry(matches[offset])
+    }
+
+    /// Pastes a snippet's text the way an entry's is pasted, and leaves the
+    /// history alone: a snippet is not something that was copied, so counting
+    /// it as a use would reorder rows nobody touched.
+    func copyQuickSnippet(_ snippet: ClipboardSnippet) {
+        let target = pasteTargetApp
+        hideHistoryWindow()
+        pasteTargetApp = nil
+        let value = snippet.value
+        guard !value.isEmpty else { return }
+        GeneralPasteboardAccess.shared.async({
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(value, forType: .string)
+        }, then: { [weak self] in
+            self?.pasteIntoPreviousApp(target)
+        })
     }
 
     func copySelectedQuickEntry() {
+        // A snippet answers Return before the history does, since it is what
+        // the cursor is actually on when one is selected.
+        if let snippet = selectedQuickSnippet {
+            copyQuickSnippet(snippet)
+            return
+        }
         let selectedEntries = quickEntriesForPrimaryAction()
         guard !selectedEntries.isEmpty else { return }
         if selectedEntries.count == 1 {
@@ -538,7 +609,7 @@ final class ClipboardHistoryService: ObservableObject {
         // Out of the way while the keys drive, back at the first real move.
         NSCursor.setHiddenUntilMouseMoves(true)
         keyboardSelectionPointer = NSEvent.mouseLocation
-        let count = filteredQuickEntries.count
+        let count = quickSelectionCount
         guard count > 0 else {
             quickSelectionIndex = 0
             quickSelectionIsVisible = false

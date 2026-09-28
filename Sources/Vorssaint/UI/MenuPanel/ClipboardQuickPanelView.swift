@@ -8,6 +8,7 @@ struct ClipboardQuickPanelView: View {
     @ObservedObject private var history = ClipboardHistoryService.shared
     @FocusState private var searchFocused: Bool
     @State private var previewSelection = QuickPreviewSelection()
+    @State private var hoveredSnippetID: UUID?
     @State private var previewIsEditing = false
 
     private var text: ClipboardFeatureStrings {
@@ -98,9 +99,13 @@ struct ClipboardQuickPanelView: View {
         .padding(.vertical, 9)
     }
 
+    private var matchingSnippets: [ClipboardSnippet] {
+        history.filteredQuickSnippets
+    }
+
     @ViewBuilder
     private var content: some View {
-        if filtered.isEmpty {
+        if filtered.isEmpty, matchingSnippets.isEmpty {
             emptyState(history.entries.isEmpty ? text.empty : text.noResults)
         } else {
             ScrollViewReader { proxy in
@@ -147,7 +152,38 @@ struct ClipboardQuickPanelView: View {
             section(title: text.recent, entries: history.recentEntries,
                     followsSection: !history.pinnedEntries.isEmpty)
         } else {
-            section(title: text.newestFirst, entries: filtered)
+            snippetSection
+            section(title: text.newestFirst, entries: filtered,
+                    followsSection: !matchingSnippets.isEmpty)
+        }
+    }
+
+    /// What was kept on purpose, above what was merely copied. Only ever while
+    /// searching, and only the ones that match.
+    @ViewBuilder
+    private var snippetSection: some View {
+        if !matchingSnippets.isEmpty {
+            Text(text.snippetsTitle.uppercased())
+                .font(.system(size: 9.5, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .tracking(0.6)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+            ForEach(Array(matchingSnippets.enumerated()), id: \.element.id) { index, snippet in
+                QuickSnippetRow(snippet: snippet,
+                                shortcutIndex: index < 9 ? index : nil,
+                                isSelected: history.quickSelectionIsVisible
+                                    && history.selectedQuickSnippet?.id == snippet.id,
+                                isHovered: hoveredSnippetID == snippet.id,
+                                hoveredSnippetID: $hoveredSnippetID)
+                    .equatable()
+                    .id(snippet.id)
+                if index < matchingSnippets.count - 1 {
+                    Divider()
+                        .padding(.leading, 43)
+                        .padding(.trailing, 8)
+                }
+            }
         }
     }
 
@@ -239,11 +275,14 @@ struct ClipboardQuickPanelView: View {
     }
 
     private func shortcutIndex(for entry: ClipboardHistoryEntry) -> Int? {
-        filtered.prefix(9).firstIndex(where: { $0.id == entry.id })
+        guard let index = filtered.firstIndex(where: { $0.id == entry.id }) else { return nil }
+        let offset = index + matchingSnippets.count
+        return offset < 9 ? offset : nil
     }
 
     private func scrollSelectedEntry(with proxy: ScrollViewProxy) {
-        guard history.quickSelectionIsVisible, let id = history.selectedQuickEntryID else { return }
+        guard history.quickSelectionIsVisible,
+              let id = history.selectedQuickSnippet?.id ?? history.selectedQuickEntryID else { return }
         // No anchor and no animation: the list moves only when the selected
         // row is off screen, and then straight to it, so every arrow press
         // costs the same and the rows never redraw mid-slide.
@@ -607,6 +646,77 @@ private struct QuickEntryRow: View, Equatable {
         if isSelected { return Color.accentColor.opacity(isHovered ? 0.13 : 0.09) }
         if isHovered { return Color.primary.opacity(0.055) }
         return .clear
+    }
+}
+
+/// One saved snippet in the search results. Deliberately plainer than a
+/// history row: there is nothing to pin, delete, preview or select in bulk
+/// here, and the name is the point, so the text sits under it in one line.
+private struct QuickSnippetRow: View, Equatable {
+    let snippet: ClipboardSnippet
+    let shortcutIndex: Int?
+    let isSelected: Bool
+    let isHovered: Bool
+    @Binding var hoveredSnippetID: UUID?
+
+    private var history: ClipboardHistoryService { .shared }
+
+    static func == (lhs: QuickSnippetRow, rhs: QuickSnippetRow) -> Bool {
+        lhs.snippet == rhs.snippet
+            && lhs.shortcutIndex == rhs.shortcutIndex
+            && lhs.isSelected == rhs.isSelected
+            && lhs.isHovered == rhs.isHovered
+    }
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 9) {
+            Image(systemName: "text.badge.star")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.tertiary)
+                .frame(width: 26)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(snippet.label)
+                    .font(.system(size: 12, weight: .medium))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                Text(snippet.value)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Spacer(minLength: 8)
+            if let shortcutIndex {
+                Text("⌘\(shortcutIndex + 1)")
+                    .font(.system(size: 9.5, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .frame(minHeight: 48)
+        .background(
+            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                .fill(isSelected ? Color.accentColor.opacity(isHovered ? 0.13 : 0.09)
+                      : isHovered ? Color.primary.opacity(0.055) : Color.clear)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                .strokeBorder(isSelected ? Color.accentColor.opacity(0.24) : Color.clear,
+                              lineWidth: 1)
+        )
+        .contentShape(Rectangle())
+        .onHover { hovering in
+            if hovering, NSEvent.mouseLocation == history.keyboardSelectionPointer { return }
+            withAnimation(.easeOut(duration: 0.1)) {
+                hoveredSnippetID = hovering
+                    ? snippet.id
+                    : (hoveredSnippetID == snippet.id ? nil : hoveredSnippetID)
+            }
+        }
+        .onTapGesture { history.copyQuickSnippet(snippet) }
+        .help(snippet.value)
     }
 }
 

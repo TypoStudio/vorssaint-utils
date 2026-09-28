@@ -515,6 +515,10 @@ enum DefaultsKey {
     static let mediaTextLanguageCorrection = "mediaTextLanguageCorrection"
 
     // Clipboard history — text only, opt-in and local.
+    /// Text kept on purpose under a name, as [ClipboardSnippet] JSON. Separate
+    /// from the text-snippet feature's own list: these are pasted by hand from
+    /// the history window, never expanded from a trigger while typing.
+    static let clipboardSnippets = "clipboardSnippets"
     static let clipboardHistoryEnabled = "clipboardHistoryEnabled"
     static let clipboardHistoryEntries = "clipboardHistoryEntries"
     static let clipboardHistoryLimit = "clipboardHistoryLimit"

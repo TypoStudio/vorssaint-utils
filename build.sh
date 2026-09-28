@@ -399,6 +399,7 @@ if (( TEST )); then
         Sources/Vorssaint/UI/NonModalAlert.swift
         Sources/Vorssaint/Services/Clipboard/ClipboardHistorySupport.swift
         Sources/Vorssaint/Services/Clipboard/ClipboardAutoClearSupport.swift
+        Sources/Vorssaint/Services/Clipboard/ClipboardSnippetSupport.swift
         Sources/Vorssaint/Services/AutoQuit/AutoQuitSupport.swift
         Sources/Vorssaint/Services/Shelf/ShelfSupport.swift
         Sources/Vorssaint/Services/Shelf/ShelfFilePromiseTransfer.swift
@@ -447,6 +448,9 @@ if (( TEST )); then
         Sources/Vorssaint/Services/CommandBar/CommandBarEmoji.swift
         Sources/Vorssaint/Services/CommandBar/CommandBarLinks.swift
         Sources/Vorssaint/Services/CommandBar/CommandBarDates.swift
+        Sources/Vorssaint/Services/CommandBar/CommandBarGenerator.swift
+        Sources/Vorssaint/Services/CommandBar/CommandBarDictionary.swift
+        Sources/Vorssaint/Services/CommandBar/CommandBarHints.swift
         Sources/Vorssaint/Services/CommandBar/CommandBarRowShortcuts.swift
         Sources/Vorssaint/Services/CommandBar/CommandBarSystemSettingsSupport.swift
         Sources/Vorssaint/Services/CommandBar/CommandBarFileSearchSupport.swift
